@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Recent Tab Switch",
+  "version": "1.0.0",
+  "description": "Switch tabs in most-recently-used order (Firefox-style) with an Alt+Tab-style switcher modal showing recent tabs.",
+  "permissions": ["storage", "scripting", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "switch-to-recent": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Open switcher / cycle to more recent tab"
+    },
+    "switch-to-recent-reverse": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Cycle to less recent tab (reverse)"
+    }
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Recent Tab Switch — Options"
+  },
+  "author": "Martin Caminoa",
+  "homepage_url": "https://github.com/martin5211/RecentTabSwitch",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png",
+    "256": "icons/icon256.png",
+    "512": "icons/icon512.png"
+  }
+}

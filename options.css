@@ -1,0 +1,108 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1c1c1e;
+  --muted: #6b6b70;
+  --accent: #2f6fed;
+  --border: #d8d8dd;
+  --card: #ffffff;
+  --bg: #f6f6f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #f2f2f5;
+    --muted: #a0a0a8;
+    --accent: #4c8dff;
+    --border: #3a3a3d;
+    --card: #1f1f22;
+    --bg: #161618;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 16px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+}
+h1 { font-size: 22px; margin: 0 0 8px; }
+h2 { font-size: 15px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.intro { color: var(--muted); line-height: 1.5; margin: 0 0 24px; }
+
+section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 18px 20px;
+  margin-bottom: 18px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.row span { line-height: 1.4; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 4px 0 8px; }
+code {
+  background: rgba(127, 127, 127, 0.18);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+input[type="number"] {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+}
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.record-row { margin-top: 6px; }
+.record {
+  padding: 8px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+.record:focus { outline: 2px solid var(--accent); border-style: solid; }
+.trigger-label { font-weight: 600; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.save {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.save:hover { filter: brightness(1.05); }
+.status { color: var(--muted); font-size: 14px; }

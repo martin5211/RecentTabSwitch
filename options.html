@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recent Tab Switch — Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Recent Tab Switch</h1>
+    <p class="intro">
+      Switch tabs in most-recently-used order with an Alt+Tab-style switcher. Hold the
+      modifier and tap the trigger key to cycle through recent tabs; release to switch.
+      Add <strong>Shift</strong> to cycle backwards.
+    </p>
+
+    <section>
+      <h2>Trigger shortcut</h2>
+      <label class="row">
+        <input type="radio" name="mode" id="mode-auto">
+        <span>Auto-detect (recommended)</span>
+      </label>
+      <p class="hint">
+        Uses <strong>Ctrl</strong> + <code>&lt;</code> (the key right of left-Shift) on
+        ISO/Spanish keyboards, and <strong>Ctrl</strong> + <code>`</code> on ANSI/English.
+      </p>
+      <label class="row">
+        <input type="radio" name="mode" id="mode-custom">
+        <span>Custom key</span>
+      </label>
+      <div class="row record-row">
+        <button type="button" id="record" class="record">Click, then press a key…</button>
+        <span id="trigger-label" class="trigger-label"></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Switcher</h2>
+      <label class="row">
+        <span>Max tabs shown</span>
+        <input type="number" id="max-tabs" min="1" max="9" step="1">
+      </label>
+      <label class="row">
+        <input type="checkbox" id="thumbnails">
+        <span>Show page thumbnails (screenshots, stored locally only)</span>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="restricted-multitab">
+        <span>On chrome:// / New Tab pages, cycle through multiple recent tabs (off = switch only between the current and most-recent tab)</span>
+      </label>
+      <p class="hint">Applies to the shortcut bound at chrome://extensions/shortcuts. Normal pages always show the full modal.</p>
+    </section>
+
+    <section>
+      <h2>Thumbnail blocklist</h2>
+      <p class="hint">One domain per line. These pages are never screenshotted (subdomains included). Incognito tabs are always skipped.</p>
+      <textarea id="blocklist" rows="5" placeholder="example.com&#10;mybank.com"></textarea>
+    </section>
+
+    <div class="actions">
+      <button type="button" id="save" class="save">Save</button>
+      <span id="status" class="status"></span>
+    </div>
+  </div>
+  <script src="dist/options.js"></script>
+</body>
+</html>
