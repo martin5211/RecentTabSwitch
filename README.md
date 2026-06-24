@@ -1,5 +1,7 @@
 # Recent Tab Switch
 
+![Recent Tab Switch screenshot](icons/screenshot.png)
+
 A Chrome extension that switches tabs in most-recently-used order, the way Alt+Tab switches
 windows. Hold a modifier, tap the trigger key to cycle through your recent tabs, and release
 to land on the one you want. It's the Firefox-style "jump to the last tab" behavior that
@@ -54,6 +56,21 @@ Then load it in Chrome:
 
 Use `npm run watch` to rebuild on change while developing. The shipped extension has no
 runtime dependencies.
+
+## Packaging for publication
+
+```bash
+npm run package
+```
+
+This builds the extension and writes a Chrome Web Store-ready zip to
+`build/recent-tab-switch-v<version>.zip`, containing only the files Chrome loads (manifest,
+`dist/`, icons, and the options page). Upload that zip in the
+[Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+
+To produce a `.crx` instead — for self-hosting or sideloading — open `chrome://extensions`,
+click "Pack extension", point it at this folder, and Chrome will sign a `.crx` with a key you
+keep. The Web Store does not need a `.crx`; the zip is enough.
 
 ## Settings
 

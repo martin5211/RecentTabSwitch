@@ -1,5 +1,5 @@
 {
-  "name": "recent-tab-switch",
+  "name": "Recent Tab Switch",
   "version": "1.0.0",
   "description": "Switch Chrome tabs in most-recently-used order (Firefox-style) with an Alt+Tab-style switcher modal.",
   "type": "module",
@@ -7,13 +7,15 @@
   "scripts": {
     "build": "node esbuild.config.mjs && tsc --noEmit",
     "watch": "node esbuild.config.mjs --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && node scripts/package.mjs"
   },
   "author": "Martin Caminoa",
   "homepage": "https://github.com/martin5211/RecentTabSwitch",
   "license": "MIT",
   "devDependencies": {
     "@types/chrome": "^0.0.287",
+    "archiver": "^7.0.1",
     "esbuild": "^0.24.0",
     "typescript": "^5.7.2"
   }
