@@ -1,5 +1,7 @@
 # Recent Tab Switch
 
+[![Available in the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/recent-tab-switch/heipngjmhmcnjinipnnodocaheopkcnc)
+
 ![Recent Tab Switch screenshot](icons/screenshot.png)
 
 A Chrome extension that switches tabs in most-recently-used order, the way Alt+Tab switches
