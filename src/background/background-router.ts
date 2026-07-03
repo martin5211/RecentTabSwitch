@@ -38,6 +38,7 @@ export class BackgroundRouter {
   }
 
   private async getRecent(windowId: number): Promise<TabInfo[]> {
+    await this.mru.whenReady();
     const ids = this.mru.recentIds(windowId, this.settings.get().maxTabs);
     const result: TabInfo[] = [];
     for (const id of ids) {

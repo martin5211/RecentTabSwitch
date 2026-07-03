@@ -44,6 +44,7 @@ export class CommandSwitcher {
       return;
     }
 
+    await this.mru.whenReady();
     const win = await chrome.windows.getLastFocused();
     if (win.id === undefined) return;
 
