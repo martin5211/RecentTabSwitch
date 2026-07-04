@@ -27,4 +27,7 @@ router.start();
 injector.start();
 commandSwitcher.start();
 
+chrome.action.onClicked.addListener(() => void chrome.runtime.openOptionsPage());
+chrome.runtime.onInstalled.addListener(() => void ThumbnailCache.clearLegacyLocalCache());
+
 console.log('[RecentTabSwitch] background ready');

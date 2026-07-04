@@ -32,6 +32,11 @@
         <button type="button" id="record" class="record">Click, then press a key…</button>
         <span id="trigger-label" class="trigger-label"></span>
       </div>
+      <p class="hint">
+        Note: the in-page shortcut doesn't fire while an embedded frame (video player,
+        embedded editor) has keyboard focus — the browser-level shortcut from
+        chrome://extensions/shortcuts works everywhere.
+      </p>
     </section>
 
     <section>
@@ -42,7 +47,7 @@
       </label>
       <label class="row">
         <input type="checkbox" id="thumbnails">
-        <span>Show page thumbnails (screenshots, stored locally only)</span>
+        <span>Show page thumbnails (screenshots, kept locally only until the browser closes)</span>
       </label>
       <label class="row">
         <input type="checkbox" id="restricted-multitab">

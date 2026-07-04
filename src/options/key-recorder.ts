@@ -11,6 +11,7 @@ export class KeyRecorder {
   constructor(
     private readonly input: HTMLElement,
     private readonly onRecord: (key: RecordedKey) => void,
+    private readonly onInvalid?: () => void,
   ) {}
 
   attach(): void {
@@ -20,6 +21,12 @@ export class KeyRecorder {
   private handle(e: KeyboardEvent): void {
     e.preventDefault();
     if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return; // wait for the real key
+    // Without Ctrl/Alt the binding would hijack normal typing on every page
+    // (Shift alone is out too — it's reserved for reverse cycling).
+    if (!e.ctrlKey && !e.altKey) {
+      this.onInvalid?.();
+      return;
+    }
     this.onRecord({
       code: e.code,
       ctrl: e.ctrlKey,

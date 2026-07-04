@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.0.2] - 2026-07-04
+
+Security, privacy, and stability hardening.
+
+### Security / Privacy
+
+- The switcher overlay's shadow root is now closed, so pages can no longer read the
+  titles, URLs, favicons, or thumbnails of your other recent tabs from the DOM.
+- Thumbnails moved from `chrome.storage.local` to `chrome.storage.session`: screenshots
+  are cleared when the browser exits and can never be shown for an unrelated tab that
+  reuses a previous session's tab id. Old local caches are wiped on update.
+- Thumbnails are now removed when a tab navigates to a blocklisted or non-web page, and
+  the whole cache is cleared when thumbnail capture is turned off.
+
+### Fixed
+
+- Clicking the toolbar icon now opens the Options page (previously did nothing).
+- The key recorder rejects bindings without Ctrl/Alt, which would have hijacked normal
+  typing on every page; stored bindings without a modifier fall back to the default.
+- The modal no longer commits early when the page moves focus between its own elements;
+  only the window itself losing focus commits.
+- Fixed a race where a screenshot could be stored under the wrong tab if you switched
+  tabs during the capture rate-limit wait.
+- Closing a tab during a blind cycle (on `chrome://` pages) no longer corrupts the MRU
+  order with a dead tab id.
+- The trigger no longer fires when the Meta/Win key is also held.
+
+### Stability
+
+- Tabs dragged between windows now move between the windows' MRU lists immediately;
+  previously the old window's switcher kept listing (and could activate) the moved tab.
+- Prerendered navigations (`tabs.onReplaced`, common from Google Search) no longer drop
+  the tab from the switcher or orphan its thumbnail.
+- After an extension update/reload, orphaned content scripts detach their key listeners
+  instead of silently swallowing the trigger key forever.
+- Settings read from `chrome.storage.sync` are validated and clamped, so a corrupted
+  value (e.g. a non-numeric `maxTabs`) can no longer blank the switcher.
+- Rapid presses of the command shortcut can no longer start two overlapping blind cycles.
+- Options page documents that the in-page shortcut doesn't fire while an embedded frame
+  has focus (the browser-level shortcut covers that case).
+
 ## [1.0.0] - 2026-06-24
 
 Initail release.

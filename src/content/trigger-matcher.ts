@@ -20,7 +20,9 @@ export class TriggerMatcher {
   }
 
   static fromSettings(settings: Settings, resolvedCode: string): Binding {
-    if (settings.triggerMode === 'custom') {
+    // A binding without Ctrl/Alt would hijack plain typing; refuse it even if it somehow
+    // reached storage (the options page also rejects it at recording time).
+    if (settings.triggerMode === 'custom' && (settings.customCtrl || settings.customAlt)) {
       return {
         code: settings.customCode,
         ctrl: settings.customCtrl,
@@ -37,6 +39,7 @@ export class TriggerMatcher {
       e.code === this.binding.code &&
       e.ctrlKey === this.binding.ctrl &&
       e.altKey === this.binding.alt &&
+      !e.metaKey &&
       (this.binding.shift ? e.shiftKey : true)
     );
   }

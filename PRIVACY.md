@@ -10,9 +10,11 @@ and it has no analytics, tracking, or network calls of its own.
   account. They contain no browsing content.
 - **Page thumbnails** are small JPEG screenshots of tabs you visit, used to render the
   switcher modal. They are:
-  - stored **only locally** (`chrome.storage.local`) and **never synced or transmitted**;
+  - stored **only locally** (`chrome.storage.session`) and **never synced or transmitted**;
   - limited to a small rolling cache (most recent ~30 tabs), older entries are discarded;
-  - removed when the corresponding tab is closed.
+  - removed when the corresponding tab is closed, when the page navigates somewhere that
+    must not be shown (blocklisted or non-web pages), and when thumbnails are turned off;
+  - cleared automatically when the browser exits (they never persist across sessions).
 
 ## What it does not do
 
@@ -29,5 +31,6 @@ and it has no analytics, tracking, or network calls of its own.
 
 ## Removing data
 
-Uninstalling the extension removes its local thumbnail cache. Synced settings can be cleared
-from `chrome://extensions` or by resetting them on the Options page.
+The thumbnail cache is cleared whenever the browser exits, when thumbnails are disabled on
+the Options page, and on uninstall. Synced settings can be cleared from `chrome://extensions`
+or by resetting them on the Options page.

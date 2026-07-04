@@ -48,6 +48,8 @@ export class BackgroundRouter {
       } catch {
         continue;
       }
+      // Skip stale entries for tabs that have moved to another window.
+      if (tab.windowId !== windowId) continue;
       result.push({
         id,
         title: tab.title ?? '',

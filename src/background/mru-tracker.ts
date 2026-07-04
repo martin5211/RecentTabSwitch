@@ -33,6 +33,15 @@ export class MruTracker {
         this.save();
       });
     });
+    chrome.tabs.onDetached.addListener((tabId, { oldWindowId }) => {
+      void this.ready.then(() => this.detach(oldWindowId, tabId));
+    });
+    chrome.tabs.onAttached.addListener((tabId, { newWindowId }) => {
+      void this.ready.then(() => this.attach(newWindowId, tabId));
+    });
+    chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
+      void this.ready.then(() => this.replace(removedTabId, addedTabId));
+    });
     this.ready = this.restore();
   }
 
@@ -101,6 +110,36 @@ export class MruTracker {
       if (i !== -1) list.splice(i, 1);
     }
     this.save();
+  }
+
+  /** Tab left its window (dragged to another one): drop it from the old list. */
+  private detach(windowId: number, tabId: number): void {
+    const list = this.byWindow.get(windowId);
+    if (!list) return;
+    const i = list.indexOf(tabId);
+    if (i === -1) return;
+    list.splice(i, 1);
+    this.save();
+  }
+
+  /** Tab joined a window: slot it in behind the active tab (recent, but not current). */
+  private attach(windowId: number, tabId: number): void {
+    const list = this.listFor(windowId);
+    if (list.includes(tabId)) return;
+    list.splice(Math.min(1, list.length), 0, tabId);
+    this.save();
+  }
+
+  /** Prerender navigation swapped the tab id; keep the entry's position. */
+  private replace(oldTabId: number, newTabId: number): void {
+    for (const list of this.byWindow.values()) {
+      const i = list.indexOf(oldTabId);
+      if (i !== -1) {
+        list[i] = newTabId;
+        this.save();
+        return;
+      }
+    }
   }
 
   /** Recent tab ids for a window (most-recent first), excluding the active tab (index 0). */

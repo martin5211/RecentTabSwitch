@@ -29,6 +29,13 @@ export class ThumbnailService {
       }
     });
     chrome.tabs.onRemoved.addListener((tabId) => void this.cache.remove(tabId));
+    chrome.tabs.onReplaced.addListener(
+      (addedTabId, removedTabId) => void this.cache.rekey(removedTabId, addedTabId),
+    );
+    // Turning thumbnails off must also drop the screenshots already captured.
+    this.settings.subscribe((s) => {
+      if (!s.thumbnails) void this.cache.clear();
+    });
   }
 
   getThumb(tabId: number): Promise<string | undefined> {
@@ -41,7 +48,8 @@ export class ThumbnailService {
     if (pending) clearTimeout(pending);
     this.timers.set(
       windowId,
-      setTimeout(() => void this.run(windowId), ThumbnailService.DEBOUNCE_MS),
+      // catch: the window may close between scheduling and capture
+      setTimeout(() => void this.run(windowId).catch(() => {}), ThumbnailService.DEBOUNCE_MS),
     );
   }
 
@@ -52,11 +60,21 @@ export class ThumbnailService {
 
     const [tab] = await chrome.tabs.query({ active: true, windowId });
     if (!tab || tab.id === undefined || tab.incognito) return;
-    if (!ThumbnailService.isCapturable(tab.url, settings.blocklist)) return;
+    if (!ThumbnailService.isCapturable(tab.url, settings.blocklist)) {
+      // The tab navigated somewhere we must not show — drop the previous page's screenshot.
+      await this.cache.remove(tab.id);
+      return;
+    }
 
     const wait = ThumbnailService.MIN_INTERVAL_MS - (Date.now() - this.lastCaptureAt);
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     this.lastCaptureAt = Date.now();
+
+    // The user may have switched tabs or navigated during the rate-limit wait; capturing
+    // now would store the wrong page under this tab id.
+    const [current] = await chrome.tabs.query({ active: true, windowId });
+    if (current?.id !== tab.id) return;
+    if (!ThumbnailService.isCapturable(current.url, settings.blocklist)) return;
 
     const dataUrl = await this.capturer.capture(windowId);
     if (dataUrl) await this.cache.set(tab.id, dataUrl);

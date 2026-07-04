@@ -23,6 +23,8 @@ export class CommandSwitcher {
   private static readonly CYCLE_TIMEOUT_MS = 1500;
 
   private session: CycleSession | null = null;
+  /** Serializes handle() calls so rapid presses can't race past the session check. */
+  private pending: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly settings: SettingsStore,
@@ -32,8 +34,9 @@ export class CommandSwitcher {
 
   start(): void {
     chrome.commands.onCommand.addListener((command) => {
-      if (command === CommandSwitcher.FORWARD) void this.handle(false);
-      else if (command === CommandSwitcher.REVERSE) void this.handle(true);
+      if (command !== CommandSwitcher.FORWARD && command !== CommandSwitcher.REVERSE) return;
+      const reverse = command === CommandSwitcher.REVERSE;
+      this.pending = this.pending.then(() => this.handle(reverse)).catch(() => {});
     });
   }
 
@@ -97,7 +100,23 @@ export class CommandSwitcher {
     this.session = null;
     if (!s) return;
     this.mru.resumeActivations();
-    this.mru.touch(s.windowId, s.order[s.index]);
+    void this.touchLanded(s);
+  }
+
+  /** Record the landed tab in the MRU, unless it was closed mid-cycle (a dead id at the
+   *  front would break the "index 0 = active tab" invariant); fall back to the real active tab. */
+  private async touchLanded(s: CycleSession): Promise<void> {
+    try {
+      await chrome.tabs.get(s.order[s.index]);
+      this.mru.touch(s.windowId, s.order[s.index]);
+    } catch {
+      try {
+        const [active] = await chrome.tabs.query({ active: true, windowId: s.windowId });
+        if (active?.id !== undefined) this.mru.touch(s.windowId, active.id);
+      } catch {
+        /* window closed */
+      }
+    }
   }
 
   private static isInjectable(url: string | undefined): boolean {

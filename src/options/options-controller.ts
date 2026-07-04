@@ -41,11 +41,18 @@ export class OptionsController {
   }
 
   private attachHandlers(): void {
-    new KeyRecorder(this.el('record'), (key) => {
-      this.recorded = key;
-      this.el('trigger-label').textContent = key.label;
-      this.el<HTMLInputElement>('mode-custom').checked = true;
-    }).attach();
+    new KeyRecorder(
+      this.el('record'),
+      (key) => {
+        this.recorded = key;
+        this.el('trigger-label').textContent = key.label;
+        this.el<HTMLInputElement>('mode-custom').checked = true;
+      },
+      () => {
+        this.el('trigger-label').textContent =
+          'Include Ctrl or Alt — a bare key would break typing on every page';
+      },
+    ).attach();
 
     this.el<HTMLInputElement>('mode-auto').addEventListener('change', () => {
       this.el('trigger-label').textContent = AUTO_LABEL;

@@ -95,7 +95,8 @@ export class SwitcherOverlay {
       'position:fixed !important;inset:0 !important;width:100% !important;height:100% !important;' +
       'margin:0 !important;padding:0 !important;border:0 !important;background:transparent !important;' +
       'z-index:2147483647 !important;pointer-events:none !important;';
-    this.root = this.host.attachShadow({ mode: 'open' });
+    // Closed so the host page can't read recent-tab titles/urls/thumbnails via host.shadowRoot.
+    this.root = this.host.attachShadow({ mode: 'closed' });
 
     const style = document.createElement('style');
     style.textContent = OVERLAY_CSS;

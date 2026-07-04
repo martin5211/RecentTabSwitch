@@ -8,6 +8,14 @@ import { TriggerMatcher } from './trigger-matcher';
  * trigger in the capture phase and prevents default so the page never sees it.
  */
 export class KeyboardController {
+  private readonly keyDownRef = (e: KeyboardEvent): void => this.onKeyDown(e);
+  private readonly keyUpRef = (e: KeyboardEvent): void => this.onKeyUp(e);
+  // Only commit when the window itself loses focus; a capture-phase listener also sees
+  // element blurs, which must not close the modal.
+  private readonly blurRef = (e: FocusEvent): void => {
+    if (e.target === window) this.switcher.commit();
+  };
+
   constructor(
     private readonly settings: SettingsStore,
     private readonly detector: LayoutDetector,
@@ -21,9 +29,22 @@ export class KeyboardController {
     await this.refreshBinding();
     this.settings.subscribe(() => void this.refreshBinding());
 
-    window.addEventListener('keydown', (e) => this.onKeyDown(e), true);
-    window.addEventListener('keyup', (e) => this.onKeyUp(e), true);
-    window.addEventListener('blur', () => this.switcher.commit(), true);
+    window.addEventListener('keydown', this.keyDownRef, true);
+    window.addEventListener('keyup', this.keyUpRef, true);
+    window.addEventListener('blur', this.blurRef, true);
+  }
+
+  /**
+   * After an extension update/reload this script is orphaned: chrome.runtime is dead but the
+   * window listeners live on, silently eating the trigger key while the freshly injected
+   * script also handles it. Detect that and unhook for good.
+   */
+  private detachIfOrphaned(): boolean {
+    if (chrome.runtime?.id) return false;
+    window.removeEventListener('keydown', this.keyDownRef, true);
+    window.removeEventListener('keyup', this.keyUpRef, true);
+    window.removeEventListener('blur', this.blurRef, true);
+    return true;
   }
 
   private async refreshBinding(): Promise<void> {
@@ -32,6 +53,7 @@ export class KeyboardController {
   }
 
   private onKeyDown(e: KeyboardEvent): void {
+    if (this.detachIfOrphaned()) return;
     if (this.switcher.isActive && e.key === 'Escape') {
       e.preventDefault();
       this.switcher.cancel();
@@ -48,6 +70,7 @@ export class KeyboardController {
   }
 
   private onKeyUp(e: KeyboardEvent): void {
+    if (this.detachIfOrphaned()) return;
     if (!this.switcher.isActive) return;
     if (this.switcher.isCommandMode) {
       // Opened via the commands shortcut: commit when the held modifier is released.
