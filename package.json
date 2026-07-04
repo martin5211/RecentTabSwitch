@@ -1,6 +1,6 @@
 {
   "name": "Recent Tab Switch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Switch Chrome tabs in most-recently-used order (Firefox-style) with an Alt+Tab-style switcher modal.",
   "type": "module",
   "private": true,
