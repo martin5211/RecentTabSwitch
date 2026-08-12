@@ -33,6 +33,14 @@ On pages where an overlay can't be drawn — `chrome://` pages, the New Tab page
 Web Store — a browser command takes over instead: `Alt+S` to cycle forward, `Alt+Shift+S` to
 go back. These are rebindable at `chrome://extensions/shortcuts`.
 
+One quirk worth knowing: if your keyboard focus is in the address bar (or on a Chrome
+settings page), the switcher can't show the modal — Chrome doesn't let extensions receive
+keyboard input there, so there'd be no way to drive or dismiss it. The same applies when
+focus is inside an embedded frame, as in some in-page editors (Jira, Splunk): key events
+stay inside the frame and never reach the extension. In both cases the shortcut instead
+jumps you straight to your most recent tab. Once you've landed there, focus is back in the
+page, and pressing the shortcut again opens the modal as usual.
+
 ### Binding Ctrl+Tab
 
 Chrome's shortcut UI won't accept `Ctrl+Tab`, but you can still assign it to the command via

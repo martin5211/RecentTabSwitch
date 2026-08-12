@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.4] - 2026-08-12
+
+### Fixed
+
+- The switcher no longer freezes when triggered while typing in an embedded frame (e.g.
+  Jira or Splunk query editors). Key events inside a frame can't reach the extension, so
+  the shortcut now switches straight to the most recent tab instead of leaving a stuck
+  modal, matching the existing address-bar behavior.
+
+### Added
+
+- Mouse support in the switcher modal: clicking outside it dismisses it (works even when
+  keyboard focus is somewhere the extension can't see), and clicking a tab card switches
+  to that tab. As a result, clicks no longer pass through the backdrop to the page while
+  the modal is open.
+
+## [1.0.3] - 2026-07-17
+
+Fixed stuck switcher modal when triggered from the address bar.
+
 ## [1.0.2] - 2026-07-04
 
 Security, privacy, and stability hardening.

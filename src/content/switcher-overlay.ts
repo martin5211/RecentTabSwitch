@@ -10,6 +10,9 @@ const OVERLAY_CSS = `
   display: flex; align-items: center; justify-content: center;
   background: rgba(0, 0, 0, 0.35) !important;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* The host is pointer-events:none; re-enable here so clicks anywhere land on the
+     backdrop (dismiss) or a card (switch) instead of reaching the page underneath. */
+  pointer-events: auto;
 }
 .cards {
   display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
@@ -25,6 +28,7 @@ const OVERLAY_CSS = `
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06) !important;
   border: 2px solid transparent !important;
+  cursor: pointer;
 }
 .card.selected {
   border-color: #4c8dff !important;
@@ -51,6 +55,11 @@ const OVERLAY_CSS = `
 
 /** Renders the switcher modal inside a Shadow DOM so host-page CSS can't interfere. */
 export class SwitcherOverlay {
+  /** Called when the user clicks the backdrop (outside the cards): dismiss the modal. */
+  onCancel: (() => void) | null = null;
+  /** Called when the user clicks a card: switch to that tab. */
+  onPick: ((index: number) => void) | null = null;
+
   private host: HTMLElement | null = null;
   private root: ShadowRoot | null = null;
   private listEl: HTMLElement | null = null;
@@ -61,7 +70,7 @@ export class SwitcherOverlay {
       document.documentElement.appendChild(this.host!);
       this.showTopLayer();
     }
-    this.listEl!.replaceChildren(...tabs.map((tab, i) => this.card(tab, i === selected)));
+    this.listEl!.replaceChildren(...tabs.map((tab, i) => this.card(tab, i, i === selected)));
   }
 
   /** Promote the host to the browser's top layer so no page z-index can cover it. */
@@ -103,6 +112,11 @@ export class SwitcherOverlay {
 
     const backdrop = document.createElement('div');
     backdrop.className = 'backdrop';
+    // A click outside the cards panel dismisses the modal. Target check so clicks on
+    // the panel's padding/gaps (which bubble up here) don't dismiss by accident.
+    backdrop.addEventListener('pointerdown', (e) => {
+      if (e.target === backdrop) this.onCancel?.();
+    });
     this.listEl = document.createElement('div');
     this.listEl.className = 'cards';
     backdrop.appendChild(this.listEl);
@@ -128,9 +142,13 @@ export class SwitcherOverlay {
     }).observe(root, { childList: true, subtree: true });
   }
 
-  private card(tab: TabInfo, selected: boolean): HTMLElement {
+  private card(tab: TabInfo, index: number, selected: boolean): HTMLElement {
     const card = document.createElement('div');
     card.className = selected ? 'card selected' : 'card';
+    card.addEventListener('pointerdown', (e) => {
+      e.stopPropagation(); // keep the backdrop's dismiss handler from firing
+      this.onPick?.(index);
+    });
 
     const thumb = document.createElement('div');
     thumb.className = 'thumb';

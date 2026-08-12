@@ -11,6 +11,8 @@ import type { SwitcherOverlay } from './switcher-overlay';
  * loading and applied once the list is ready, so a quick tap-and-release still switches.
  */
 export class SwitcherController {
+  private static readonly FOCUS_POLL_MS = 500;
+
   private active = false;
   private loading = false;
   private commandMode = false;
@@ -18,11 +20,22 @@ export class SwitcherController {
   private index = 0;
   private queuedSteps = 0;
   private queuedEnd: 'commit' | 'cancel' | null = null;
+  private focusWatchdog: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private readonly messenger: Messenger,
     private readonly overlay: SwitcherOverlay,
-  ) {}
+  ) {
+    // Mouse interaction with the modal: a click outside the cards dismisses it (even
+    // when keyboard focus is somewhere our key listeners can't see), a click on a card
+    // switches to that tab.
+    this.overlay.onCancel = () => this.cancel();
+    this.overlay.onPick = (index) => {
+      if (!this.active || this.loading) return;
+      this.index = this.wrap(index);
+      this.commit();
+    };
+  }
 
   get isActive(): boolean {
     return this.active;
@@ -52,7 +65,18 @@ export class SwitcherController {
     this.tabs = tabs;
     const start = reverse ? tabs.length - 1 : 0; // index 0 = most recent other tab
     this.index = this.wrap(start + this.queuedSteps);
+
+    // Keyboard focus may sit somewhere our listeners can't see: the browser UI (address
+    // bar, devtools) or an embedded frame (Jira/Splunk editors). The modifier keyup,
+    // Escape and blur would all go there and never reach us, leaving the modal stuck
+    // open — switch immediately instead.
+    if (this.keysUnreachable()) {
+      this.commit();
+      return;
+    }
+
     this.overlay.render(tabs, this.index);
+    this.startFocusWatchdog();
 
     if (this.queuedEnd === 'commit') this.commit();
   }
@@ -94,7 +118,37 @@ export class SwitcherController {
     return ((i % n) + n) % n;
   }
 
+  /**
+   * True when key events can't reach our window listeners. Two cases: focus is in the
+   * browser UI (address bar, devtools — hasFocus() is false), or focus is inside an
+   * embedded frame. The content script runs only in the top frame, so a focused iframe
+   * swallows every key event — and the top document still reports hasFocus() === true,
+   * which is why the active element must be checked separately.
+   */
+  private keysUnreachable(): boolean {
+    if (!document.hasFocus()) return true;
+    const tag = document.activeElement?.tagName;
+    return tag === 'IFRAME' || tag === 'FRAME' || tag === 'OBJECT' || tag === 'EMBED';
+  }
+
+  /**
+   * While the modal is open, keyboard focus can escape to somewhere keys can't reach us
+   * without the page ever seeing a blur (focus mid-transition when we opened, or a click
+   * into an embedded frame — our host is pointer-events:none, so clicks pass through).
+   * No keyup can reach us then, so poll and commit ourselves rather than leave the modal
+   * stuck.
+   */
+  private startFocusWatchdog(): void {
+    this.focusWatchdog = setInterval(() => {
+      if (this.keysUnreachable()) this.commit();
+    }, SwitcherController.FOCUS_POLL_MS);
+  }
+
   private reset(): void {
+    if (this.focusWatchdog !== null) {
+      clearInterval(this.focusWatchdog);
+      this.focusWatchdog = null;
+    }
     this.active = false;
     this.loading = false;
     this.commandMode = false;
